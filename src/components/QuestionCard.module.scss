@@ -1,0 +1,39 @@
+.container {
+  margin-bottom: 20px;
+  padding: 12px;
+  border-radius: 3px;
+  background-color: #fff;
+
+  &:hover {
+    box-shadow: 0px 4px 10px #e8e8e8;
+  }
+
+  .active {
+    color: green;
+  }
+}
+
+.title {
+  display: flex;
+  .left {
+    flex: 1;
+  }
+  .right {
+    flex: 1;
+  }
+}
+
+.button-container {
+  display: flex;
+  .left {
+    flex: 1;
+  }
+  .right {
+    flex: 1;
+    text-align: right;
+
+    button {
+      color: #999;
+    }
+  }
+}
