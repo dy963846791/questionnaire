@@ -12,6 +12,7 @@ import Star from "../pages/manage/Star";
 import Trash from "../pages/manage/Trash";
 import QuestionLayout from "../layouts/QuestionLayout";
 import Edit from "../pages/question/Edit";
+import Stat from "../pages/question/Stat";
 
 const router = createBrowserRouter([
   {
@@ -59,8 +60,8 @@ const router = createBrowserRouter([
         element: <Edit />,
       },
       {
-        path: "star/:id",
-        element: <Star />,
+        path: "stat/:id",
+        element: <Stat />,
       },
     ],
   },
@@ -71,3 +72,9 @@ const router = createBrowserRouter([
 ]);
 
 export default router;
+
+const HOME_PATH = "/";
+const LOGIN_PATHNAME = "/login";
+const REGISTER_PATH = "/register";
+const MANAGE_LIST_PATHNAME = "/manage/list";
+export { HOME_PATH, LOGIN_PATHNAME, REGISTER_PATH, MANAGE_LIST_PATHNAME };

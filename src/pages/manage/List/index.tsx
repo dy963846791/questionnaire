@@ -1,7 +1,12 @@
 import React, { FC, useState } from "react";
-import QuestionCard from "../../../components/QuestionCard";
-import styles from "./index.module.scss";
+import { useSearchParams } from "react-router-dom";
 
+import QuestionCard from "../../../components/QuestionCard";
+import { Typography } from "antd";
+
+import styles from "../common.module.scss";
+
+const {Title} = Typography;
 const rawQuestionList = [
   {
     _id: "q1",
@@ -38,24 +43,29 @@ const rawQuestionList = [
 ];
 
 const List: FC = () => {
+  const [searchParams] = useSearchParams();
+  console.log("keyword", searchParams.get("keyword"));
+
   const [questionList, setQuestionList] = useState(rawQuestionList);
 
   return (
-    <div id="list">
+    <>
       <div className={styles.header}>
         <div className={styles.left}>
-          <h3>我的问卷</h3>
+          <Title level={3}>我的问卷</Title>
         </div>
         <div className={styles.right}>搜索</div>
-        <div className={styles.content}>
-          {questionList.map((question) => {
+      </div>
+      <div className={styles.content}>
+        {/* 问卷列表 */}
+        {questionList.length > 0 &&
+          questionList.map((question) => {
             const { _id } = question;
             return <QuestionCard key={_id} {...question} />;
           })}
-        </div>
-        <div className={styles.footer}>footer</div>
       </div>
-    </div>
+      <div className={styles.footer}>loadMore...</div>
+    </>
   );
 };
 
