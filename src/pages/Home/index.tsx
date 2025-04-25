@@ -1,8 +1,10 @@
-import React, { FC } from "react";
-import { useNavigate, Link } from "react-router-dom";
+import React, { FC, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import styles from "./index.module.scss";
 import { Button, Typography } from "antd";
 import { MANAGE_LIST_PATHNAME } from "../../router";
+import axios from "axios";
+
 const { Title, Paragraph } = Typography;
 const Home: FC = () => {
   const nav = useNavigate();
