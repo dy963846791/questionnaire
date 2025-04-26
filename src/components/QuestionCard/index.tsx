@@ -1,6 +1,15 @@
-import React, { FC } from "react";
-import styles from "./QuestionCard.module.scss";
-import { Button, Space, Divider, Tag, Modal } from "antd";
+import React, { FC, useState } from "react";
+import { useRequest } from "ahooks";
+import styles from "./index.module.scss";
+import {
+  Button,
+  Space,
+  Divider,
+  Tag,
+  Modal,
+  notification,
+  message,
+} from "antd";
 import { useNavigate, Link } from "react-router-dom";
 import {
   EditOutlined,
@@ -10,6 +19,10 @@ import {
   DeleteOutlined,
   ExclamationCircleOutlined,
 } from "@ant-design/icons";
+import {
+  duplicationQuestionService,
+  updateQuestionService,
+} from "../../service/question";
 
 export type QuestionCardType = {
   _id: string;
@@ -25,7 +38,27 @@ const QuestionCard: FC<QuestionCardType> = (props: QuestionCardType) => {
   const nav = useNavigate();
   const { _id, title, createdAt, answerCount, isPublished, isStar } = props;
 
-  function duplicate() {
+  // 修改标星
+  const [isStarState, setIsStarState] = useState(isStar);
+  const { loading: changeStarLoading, run: changeStar } = useRequest(
+    async () => {
+      await updateQuestionService(_id, { isStar: !isStarState });
+    },
+    {
+      manual: true,
+      onSuccess() {
+        setIsStarState((isStarState) => {
+          return !isStarState;
+        });
+        notification.success({
+          message: isStarState ? "取消标星" : "标星",
+          description: `操作成功`,
+        });
+      },
+    }
+  );
+
+  function duplicateHandle() {
     confirm({
       title: "温馨提示",
       icon: <ExclamationCircleOutlined />,
@@ -33,21 +66,55 @@ const QuestionCard: FC<QuestionCardType> = (props: QuestionCardType) => {
       okText: "确定",
       cancelText: "取消",
       onOk() {
-        console.log("fuzhile");
+        duplicate();
       },
     });
   }
+  const { loading: duplicateLoading, run: duplicate } = useRequest(
+    async () => {
+      const data = await duplicationQuestionService(_id);
+      return data;
+    },
+    {
+      manual: true,
+      onSuccess(result) {
+        console.log("result===>", result);
+        notification.success({
+          message: "复制问卷",
+          description: "操作成功",
+        });
+        nav(`/question/edit/${result.id}`);
+      },
+    }
+  );
 
-  function delQuestion() {
+  function deleteHandle() {
     confirm({
       title: "温馨提示",
       icon: <ExclamationCircleOutlined />,
       content: "确定要删除该问卷吗？",
       onOk() {
-        console.log("删除");
+        deleteQuestion();
       },
     });
   }
+
+  const { loading: delLoading, run: deleteQuestion } = useRequest(
+    async () => {
+      const data = await updateQuestionService(_id, {isDeleted: true});
+      return data;
+    },
+    {
+      manual: true,
+      onSuccess(result) {
+        console.log("result===>", result);
+        notification.success({
+          message: "删除问卷",
+          description: "操作成功",
+        });
+      },
+    }
+  );
 
   return (
     <div className={styles.container}>
@@ -57,7 +124,7 @@ const QuestionCard: FC<QuestionCardType> = (props: QuestionCardType) => {
             to={isPublished ? `/question/stat/${_id}` : `/question/edit/${_id}`}
           >
             <Space>
-              {isStar && <StarOutlined style={{ color: "red" }} />}
+              {isStarState && <StarOutlined style={{ color: "red" }} />}
               {title}
             </Space>
           </Link>
@@ -99,15 +166,22 @@ const QuestionCard: FC<QuestionCardType> = (props: QuestionCardType) => {
         </div>
         <div className={styles.right}>
           <Space>
-            <Button type="text" size="small" icon={<StarOutlined />}>
-              {isStar ? "取消标星" : "标星"}
+            <Button
+              type="text"
+              size="small"
+              icon={<StarOutlined />}
+              onClick={changeStar}
+              loading={changeStarLoading}
+            >
+              {isStarState ? "取消标星" : "标星"}
             </Button>
 
             <Button
               type="text"
               size="small"
               icon={<CopyOutlined />}
-              onClick={duplicate}
+              onClick={duplicateHandle}
+              loading={duplicateLoading}
             >
               复制
             </Button>
@@ -116,7 +190,8 @@ const QuestionCard: FC<QuestionCardType> = (props: QuestionCardType) => {
               type="text"
               size="small"
               icon={<DeleteOutlined />}
-              onClick={delQuestion}
+              onClick={deleteHandle}
+              loading={delLoading}
             >
               删除
             </Button>

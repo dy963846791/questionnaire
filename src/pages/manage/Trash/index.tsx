@@ -1,48 +1,61 @@
 import React, { FC, useState } from "react";
-import { Typography, Empty, Table, Tag, Button, Space, Modal } from "antd";
-import styles from "../common.module.scss";
+import {
+  Typography,
+  Empty,
+  Table,
+  Tag,
+  Button,
+  Space,
+  Modal,
+  Spin,
+  notification,
+} from "antd";
 import { ExclamationCircleOutlined } from "@ant-design/icons";
+
+import ListSearch from "../../../components/ListSearch";
+import ListPage from "../../../components/ListPage";
+
+import useLoadQuestionListData from "../../../hooks/useLoadQuestionListData";
+
+import styles from "../common.module.scss";
+import { useRequest } from "ahooks";
+import {
+  deleteQuestionService,
+  updateQuestionService,
+} from "../../../service/question";
 
 const { Title } = Typography;
 const { confirm } = Modal;
-const rawQuestionList = [
-  {
-    _id: "q1",
-    title: "问卷1",
-    isPublished: true,
-    isStar: false,
-    answerCount: 5,
-    createdAt: "3月10日 12:00",
-  },
-  {
-    _id: "q2",
-    title: "问卷2",
-    isPublished: false,
-    isStar: true,
-    answerCount: 10,
-    createdAt: "3月11日 14:00",
-  },
-  {
-    _id: "q3",
-    title: "问卷3",
-    isPublished: true,
-    isStar: false,
-    answerCount: 20,
-    createdAt: "3月12日 16:00",
-  },
-  {
-    _id: "q4",
-    title: "问卷4",
-    isPublished: true,
-    isStar: true,
-    answerCount: 30,
-    createdAt: "3月13日 18:00",
-  },
-];
 
 const Trash: FC = () => {
-  const [questionList, setQuestionList] = useState(rawQuestionList);
   const [selectedId, setSelectedId] = useState<string[]>([]);
+
+  // 恢复
+  const { loading: recoverLoading, run: recoverQuestion } = useRequest(
+    async () => {
+      for await (const id of selectedId) {
+        await updateQuestionService(id, { isDeleted: false });
+      }
+    },
+    {
+      manual: true,
+      onSuccess() {
+        notification.success({
+          message: "恢复问卷",
+          description: "操作成功",
+        });
+        refresh();
+        setSelectedId([]);
+      },
+    }
+  );
+
+  const {
+    data = {},
+    loading,
+    refresh,
+  } = useLoadQuestionListData({ isDeleted: true });
+  const { list = [], total = 0 } = data;
 
   function del() {
     confirm({
@@ -52,10 +65,27 @@ const Trash: FC = () => {
       okText: "确定",
       cancelText: "取消",
       onOk() {
-        console.log("彻底删除");
+        deleteQuestion();
       },
-    })
+    });
   }
+
+  const { loading: delLoading, run: deleteQuestion } = useRequest(
+    async () => {
+      await deleteQuestionService(selectedId);
+    },
+    {
+      manual: true,
+      onSuccess() {
+        notification.success({
+          message: "彻底删除",
+          description: "操作成功",
+        });
+        refresh();
+        setSelectedId([]);
+      },
+    }
+  );
 
   const tableColumn = [
     {
@@ -87,16 +117,26 @@ const Trash: FC = () => {
     <>
       <div style={{ marginBottom: "16px" }}>
         <Space>
-          <Button type="primary" disabled={selectedId.length === 0}>
+          <Button
+            type="primary"
+            disabled={selectedId.length === 0}
+            onClick={recoverQuestion}
+            loading={recoverLoading}
+          >
             恢复
           </Button>
-          <Button danger disabled={selectedId.length === 0} onClick={del}>
+          <Button
+            danger
+            disabled={selectedId.length === 0}
+            onClick={del}
+            loading={delLoading}
+          >
             彻底删除
           </Button>
         </Space>
       </div>
       <Table
-        dataSource={questionList}
+        dataSource={list}
         columns={tableColumn}
         pagination={false}
         rowKey={(q) => q._id}
@@ -117,11 +157,21 @@ const Trash: FC = () => {
         <div className={styles.left}>
           <Title level={3}>回收站</Title>
         </div>
-        <div className={styles.right}>搜索</div>
+        <div className={styles.right}>
+          <ListSearch />
+        </div>
       </div>
       <div className={styles.content}>
-        {questionList.length === 0 && <Empty description="暂无数据" />}
-        {questionList.length > 0 && TableElem}
+        {loading && (
+          <div style={{ textAlign: "center" }}>
+            <Spin />
+          </div>
+        )}
+        {!loading && list.length === 0 && <Empty description="暂无数据" />}
+        {!loading && list.length > 0 && TableElem}
+      </div>
+      <div className={styles.footer}>
+        <ListPage total={total} />
       </div>
     </>
   );

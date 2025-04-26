@@ -1,52 +1,111 @@
-import React, { FC, useState } from "react";
-import { useSearchParams } from "react-router-dom";
+import { FC, useEffect, useState, useRef, useMemo } from "react";
+import { Typography, Spin, Empty } from "antd";
+import { useDebounceFn, useRequest } from "ahooks";
 
 import QuestionCard from "../../../components/QuestionCard";
-import { Typography } from "antd";
+import ListSearch from "../../../components/ListSearch";
+import { useSearchParams } from "react-router-dom";
+
+import { getQuestionList } from "../../../service/question";
 
 import styles from "../common.module.scss";
+import { LIST_PAGE_SIZE, LIST_SEARCH_PARAM_KEY } from "../../../constant";
 
-const {Title} = Typography;
-const rawQuestionList = [
-  {
-    _id: "q1",
-    title: "问卷1",
-    isPublished: true,
-    isStar: false,
-    answerCount: 5,
-    createdAt: "3月10日 12:00",
-  },
-  {
-    _id: "q2",
-    title: "问卷2",
-    isPublished: false,
-    isStar: true,
-    answerCount: 10,
-    createdAt: "3月11日 14:00",
-  },
-  {
-    _id: "q3",
-    title: "问卷3",
-    isPublished: true,
-    isStar: false,
-    answerCount: 20,
-    createdAt: "3月12日 16:00",
-  },
-  {
-    _id: "q4",
-    title: "问卷4",
-    isPublished: true,
-    isStar: true,
-    answerCount: 30,
-    createdAt: "3月13日 18:00",
-  },
-];
+const { Title } = Typography;
 
 const List: FC = () => {
-  const [searchParams] = useSearchParams();
-  console.log("keyword", searchParams.get("keyword"));
+  // 是否已经开始加载（防抖,有延迟时间）
+  const [started, setStarted] = useState(false);
+  const [page, setPage] = useState(1);
+  const [list, setList] = useState([]);
+  const [total, setTotal] = useState(0);
+  const haveMoreData = total > list.length;
 
-  const [questionList, setQuestionList] = useState(rawQuestionList);
+  // 获取url参数
+  const [searchParams] = useSearchParams();
+  const keyword = searchParams.get(LIST_SEARCH_PARAM_KEY) || "";
+
+  useEffect(() => {
+    setStarted(false);
+    setPage(1);
+    setList([]);
+    setTotal(0);
+  }, [keyword]);
+
+  // 真正加载
+  const { run: load, loading } = useRequest(
+    async () => {
+      const data = await getQuestionList({
+        page,
+        pageSize: LIST_PAGE_SIZE,
+        keyword,
+      });
+      return data;
+    },
+    {
+      manual: true,
+      onSuccess(result) {
+        const { list: resultList = [], total = 0 } = result;
+        setList(list.concat(resultList));
+        setTotal(total);
+        setPage(page + 1);
+      },
+    }
+  );
+
+  const containerRef = useRef<HTMLDivElement>(null);
+  // 触发加载,借助ahooks中的useDebounceFn实现防抖
+  const { run: tryLoadMore } = useDebounceFn(
+    () => {
+      const elem = containerRef.current;
+      if (elem == null) {
+        return;
+      }
+
+      const domRect = elem.getBoundingClientRect();
+      if (domRect == null) {
+        return;
+      }
+
+      const { bottom } = domRect;
+      if (bottom <= document.body.clientHeight) {
+        load();
+        setStarted(true);
+      }
+    },
+    {
+      wait: 500,
+    }
+  );
+
+  useEffect(() => {
+    tryLoadMore();
+  }, [searchParams, tryLoadMore]);
+
+  // 页面滚动时尝试触发加载
+  useEffect(() => {
+    if (haveMoreData) {
+      window.addEventListener("scroll", tryLoadMore);
+    }
+
+    return () => {
+      window.removeEventListener("scroll", tryLoadMore);
+    };
+  }, [searchParams, haveMoreData, tryLoadMore]);
+
+  const LoadMOreContentElem = useMemo(() => {
+    if (!started || loading) {
+      return <Spin />;
+    }
+    if (total === 0) {
+      return <Empty description="暂无数据" />;
+    }
+
+    if (!haveMoreData) {
+      return <span>没有更多了...</span>;
+    }
+    return <span>加载更多...</span>;
+  }, [started, loading, total, haveMoreData]);
 
   return (
     <>
@@ -54,17 +113,21 @@ const List: FC = () => {
         <div className={styles.left}>
           <Title level={3}>我的问卷</Title>
         </div>
-        <div className={styles.right}>搜索</div>
+        <div className={styles.right}>
+          <ListSearch />
+        </div>
       </div>
       <div className={styles.content}>
         {/* 问卷列表 */}
-        {questionList.length > 0 &&
-          questionList.map((question) => {
+        {list.length > 0 &&
+          list.map((question: any) => {
             const { _id } = question;
             return <QuestionCard key={_id} {...question} />;
           })}
       </div>
-      <div className={styles.footer}>loadMore...</div>
+      <div className={styles.footer}>
+        <div ref={containerRef}>{LoadMOreContentElem}</div>
+      </div>
     </>
   );
 };

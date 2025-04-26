@@ -1,6 +1,14 @@
 import axios from "./ajax";
 import type { ResDataType } from "./ajax";
 
+type SearchOption = {
+  keyword: string;
+  isStar: boolean;
+  isDeleted: boolean;
+  pageSize: number;
+  page: number;
+};
+
 // 获取单个问卷信息
 export async function getQuestion(id: string): Promise<ResDataType> {
   const url = `/api/question/${id}`;
@@ -12,5 +20,42 @@ export async function getQuestion(id: string): Promise<ResDataType> {
 export async function createQuestion(): Promise<ResDataType> {
   const url = "/api/question";
   const data = (await axios.post(url)) as ResDataType;
+  return data;
+}
+
+// 获取（查询）问卷列表
+export async function getQuestionList(
+  opt: Partial<SearchOption> = {}
+): Promise<ResDataType> {
+  const url = "/api/question";
+  const data = (await axios.get(url, { params: opt })) as ResDataType;
+  return data;
+}
+
+// 更新单个问卷
+export async function updateQuestionService(
+  id: string,
+  opt: { [key: string]: any }
+): Promise<ResDataType> {
+  const url = `/api/question/${id}`;
+  const data = (await axios.patch(url, opt)) as ResDataType;
+  return data;
+}
+
+// 复制问卷
+export async function duplicationQuestionService(
+  id: string
+): Promise<ResDataType> {
+  const url = `/api/question/duplication/${id}`;
+  const data = (await axios.post(url)) as ResDataType;
+  return data;
+}
+
+// 批量彻底删除
+export async function deleteQuestionService(
+  ids: string[]
+): Promise<ResDataType> {
+  const url = `/api/question`;
+  const data = (await axios.delete(url, { data: { ids } })) as ResDataType;
   return data;
 }
