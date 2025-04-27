@@ -78,3 +78,18 @@ const LOGIN_PATHNAME = "/login";
 const REGISTER_PATH = "/register";
 const MANAGE_LIST_PATHNAME = "/manage/list";
 export { HOME_PATH, LOGIN_PATHNAME, REGISTER_PATH, MANAGE_LIST_PATHNAME };
+
+export function isLoginOrRegister(pathname: string) {
+  if ([LOGIN_PATHNAME, REGISTER_PATH].includes(pathname)) {
+    return true;
+  }
+  return false;
+}
+
+export function isNoNeedUserInfo(pathname: string) {
+  const needLoginPath = [LOGIN_PATHNAME, REGISTER_PATH, HOME_PATH];
+  if (needLoginPath.includes(pathname)) {
+    return true;
+  }
+  return false;
+}
