@@ -8,7 +8,6 @@ import {
   Tag,
   Modal,
   notification,
-  message,
 } from "antd";
 import { useNavigate, Link } from "react-router-dom";
 import {
@@ -78,7 +77,6 @@ const QuestionCard: FC<QuestionCardType> = (props: QuestionCardType) => {
     {
       manual: true,
       onSuccess(result) {
-        console.log("result===>", result);
         notification.success({
           message: "复制问卷",
           description: "操作成功",
@@ -107,7 +105,6 @@ const QuestionCard: FC<QuestionCardType> = (props: QuestionCardType) => {
     {
       manual: true,
       onSuccess(result) {
-        console.log("result===>", result);
         notification.success({
           message: "删除问卷",
           description: "操作成功",

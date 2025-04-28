@@ -3,11 +3,11 @@ import { Spin } from "antd";
 import useLoadeQuestionData from "../../../hooks/useLoadeQuestionData";
 
 const Stat: FC = () => {
-  const { loading, data } = useLoadeQuestionData();
+  const { loading } = useLoadeQuestionData();
   return (
     <Spin spinning={loading}>
       <p>Stat page</p>
-      {!loading && <div>{JSON.stringify(data)}</div>}
+      {!loading && <div>stat</div>}
     </Spin>
   );
 };

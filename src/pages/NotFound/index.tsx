@@ -1,8 +1,10 @@
 import React, { FC } from "react";
 import { useNavigate } from "react-router-dom";
-import styles from "./index.module.scss";
 import { Result, Button } from "antd";
+
 import { HOME_PATH } from "../../router";
+// import styles from "./index.module.scss";
+
 const NotFound: FC = () => {
   const nav = useNavigate();
   return (

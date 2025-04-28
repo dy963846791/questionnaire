@@ -6,7 +6,7 @@ import QuestionCard from "../../../components/QuestionCard";
 import ListSearch from "../../../components/ListSearch";
 import { useSearchParams } from "react-router-dom";
 
-import { getQuestionList } from "../../../service/question";
+import { getQuestionListService } from "../../../service/question";
 
 import styles from "../common.module.scss";
 import { LIST_PAGE_SIZE, LIST_SEARCH_PARAM_KEY } from "../../../constant";
@@ -35,7 +35,7 @@ const List: FC = () => {
   // 真正加载
   const { run: load, loading } = useRequest(
     async () => {
-      const data = await getQuestionList({
+      const data = await getQuestionListService({
         page,
         pageSize: LIST_PAGE_SIZE,
         keyword,

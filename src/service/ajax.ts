@@ -18,7 +18,6 @@ instance.interceptors.request.use(
 
 // response 拦截：统一处理errno 和 msg
 instance.interceptors.response.use((res) => {
-  console.log("res ====>", res);
   const resData = (res.data || {}) as ResType;
   const { errno, data, msg } = resData;
 

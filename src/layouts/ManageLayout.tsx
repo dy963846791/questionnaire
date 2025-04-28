@@ -10,37 +10,17 @@ import {
 } from "@ant-design/icons";
 import { useRequest } from "ahooks";
 
-import { createQuestion } from "../service/question";
+import { createQuestionService } from "../service/question";
 
 const ManageLayout: FC = () => {
   const nav = useNavigate();
   const { pathname } = useLocation();
 
-  // const [loading, setLoading] = useState(false);
-  // function handleCreateClick() {
-  //   setLoading(true);
-  //   createQuestion()
-  //     .then((res) => {
-  //       const { id } = res || {};
-  //       if (id) {
-  //         nav(`/question/edit/${id}`);
-  //         notification.success({
-  //           message: `新建问卷`,
-  //           description: `操作成功`,
-  //         });
-  //       }
-  //       console.log("handleCreateClick===>", id);
-  //     })
-  //     .finally(() => {
-  //       setLoading(false);
-  //     });
-  // }
-
   const {
     loading,
     // error,
     run: handleCreateClick,
-  } = useRequest(createQuestion, {
+  } = useRequest(createQuestionService, {
     manual: true,
     onSuccess(result) {
       nav(`/question/edit/${result._id}`);

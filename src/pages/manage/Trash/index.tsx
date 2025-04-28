@@ -144,7 +144,6 @@ const Trash: FC = () => {
           type: "checkbox",
           onChange: (selectedRowKeys) => {
             setSelectedId(selectedRowKeys as string[]);
-            console.log(selectedRowKeys);
           },
         }}
       ></Table>

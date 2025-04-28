@@ -18,7 +18,6 @@ function useNavPage(waitingUserData: boolean) {
       return;
     }
 
-    console.log("username", username);
     // 已经登录
     if (username) {
       if (isLoginOrRegister(pathname)) {

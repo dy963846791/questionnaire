@@ -70,7 +70,6 @@ const Login: React.FC<LoginProps> = () => {
   );
 
   const onFinish = (values: any) => {
-    console.log(values);
     const { username, password, remember } = values || {};
 
     run(username, password);

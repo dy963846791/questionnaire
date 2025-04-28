@@ -1,6 +1,6 @@
-import { data, useSearchParams } from "react-router-dom";
+import { useSearchParams } from "react-router-dom";
 import { useRequest } from "ahooks";
-import { getQuestionList } from "../service/question";
+import { getQuestionListService } from "../service/question";
 import {
   LIST_SEARCH_PARAM_KEY,
   LIST_PAGE_PARAM_KEY,
@@ -25,7 +25,7 @@ function useLoadQuestionListData(opt: Partial<OptionType> = {}) {
         parseInt(searchParams.get(LIST_PAGE_SIZE_PARAM_KEY) || "") ||
         LIST_PAGE_SIZE;
 
-      const data = await getQuestionList({
+      const data = await getQuestionListService({
         keyword,
         isStar,
         isDeleted,
