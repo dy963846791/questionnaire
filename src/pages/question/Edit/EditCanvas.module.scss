@@ -18,6 +18,11 @@
   border-color: #1890ff !important;
 }
 
+.locked {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
 .component {
   // 屏蔽鼠标行为，组件不被点击到
   pointer-events: none;

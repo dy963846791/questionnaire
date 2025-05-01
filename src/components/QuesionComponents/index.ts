@@ -1,16 +1,23 @@
 import { FC } from "react";
 import QuestionInputConf, { QuestionInputPropsType } from "./QuestionInput";
 import QuestionTitleConf, { QuestionTitlePropsType } from "./QuestionTitle";
+import QuestionParagraphConf, {
+  QuestionParagraphPropsType,
+} from "./QuestionParagraph";
+import QuestionInfoConf, { QuestionInfoPropsType } from "./QuestionInfo";
 
 // 各个组件的props type
 export type ComponentPropsType = QuestionInputPropsType &
-  QuestionTitlePropsType;
+  QuestionTitlePropsType &
+  QuestionParagraphPropsType &
+  QuestionInfoPropsType;
 
 // 组件的配置
 export type ComponentConfType = {
   title: string;
   type: string;
   Component: FC<ComponentPropsType>;
+  PropComponent: FC<ComponentPropsType>;
   defaultProps: ComponentPropsType;
 };
 
@@ -18,22 +25,25 @@ export type ComponentConfType = {
 const componentConfList: ComponentConfType[] = [
   QuestionInputConf,
   QuestionTitleConf,
+  QuestionParagraphConf,
+  QuestionInfoConf
 ];
 
 // 组件分组
 export const componentConfGroup = [
   {
-    groupId: 'textGroup',
+    groupId: "textGroup",
     groupName: "文本显示",
-    components: [QuestionTitleConf],
+    components: [QuestionInfoConf, QuestionTitleConf, QuestionParagraphConf],
   },
   {
-    groupId: 'inputGroup',
+    groupId: "inputGroup",
     groupName: "用户输入",
     components: [QuestionInputConf],
   },
 ];
 
 export function getComponentConfByType(type: string) {
+  console.log(type,componentConfList.find((c) => c.type === type))
   return componentConfList.find((c) => c.type === type);
 }

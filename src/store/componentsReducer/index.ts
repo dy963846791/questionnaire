@@ -1,21 +1,28 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
+import cloneDeep from "lodash.clonedeep";
 import { ComponentPropsType } from "../../components/QuesionComponents";
+import { getNextSelectedId, insertNewComponent } from "./utils";
+import { nanoid } from "nanoid";
 
 export type ComponentInfoType = {
   fe_id: string;
   type: string;
   title: string;
+  isHidden?: boolean;
+  isLocked?: boolean;
   props: ComponentPropsType;
 };
 
 export type ComponentsStateType = {
   selectedId: string;
   componentList: Array<ComponentInfoType>;
+  copiedComponent: ComponentInfoType | null;
 };
 
 const INIT_STATE: ComponentsStateType = {
   selectedId: "",
   componentList: [],
+  copiedComponent: null,
 };
 
 export const componentsSlice = createSlice({
@@ -42,28 +49,144 @@ export const componentsSlice = createSlice({
       action: PayloadAction<ComponentInfoType>
     ) => {
       const newComponent = action.payload;
+      insertNewComponent(state, newComponent);
+    },
+    // 修改组件属性
+    changeComponentProps: (
+      state: ComponentsStateType,
+      action: PayloadAction<{ fe_id: string; newProps: ComponentPropsType }>
+    ) => {
+      const { fe_id, newProps } = action.payload;
 
-      const { selectedId, componentList } = state;
-      const index = componentList.findIndex((c) => c.fe_id === selectedId);
-
-      const newComponentList = [...componentList];
-      if (index < 0) {
-        // 未选中任何组件
-        newComponentList.push(newComponent);
-      } else {
-        // 选中了组件，插入到index后面
-        newComponentList.splice(index + 1, 0, newComponent);
+      const curCom = state.componentList.find((c) => c.fe_id === fe_id);
+      if (curCom) {
+        curCom.props = {
+          ...curCom.props,
+          ...newProps,
+        };
       }
-      return {
-        ...state,
-        selectedId: newComponent.fe_id,
-        componentList: newComponentList,
-      };
+    },
+    // 删除选中组件
+    removeSelectedComponent: (state: ComponentsStateType) => {
+      const { componentList, selectedId: removeId } = state;
+
+      // 重新计算selectedId
+      const newSelectedId = getNextSelectedId(removeId, componentList);
+      state.selectedId = newSelectedId;
+
+      const index = componentList.findIndex((c) => c.fe_id === removeId);
+      componentList.splice(index, 1);
+    },
+    // 显示/隐藏组件
+    changeComponentHidden: (
+      state: ComponentsStateType,
+      action: PayloadAction<{ fe_id: string; isHidden: boolean }>
+    ) => {
+      const { componentList } = state;
+      const { fe_id, isHidden } = action.payload;
+
+      // 重新计算selectedId
+      let newSelectedId = "";
+      if (isHidden) {
+        newSelectedId = getNextSelectedId(fe_id, componentList);
+      } else {
+        newSelectedId = fe_id;
+      }
+      state.selectedId = newSelectedId;
+
+      const curCom = componentList.find((c) => c.fe_id === fe_id);
+      if (curCom) {
+        curCom.isHidden = isHidden;
+      }
+    },
+
+    // 锁定/解锁 组件
+    toggleComponentLocked: (
+      state: ComponentsStateType,
+      action: PayloadAction<{ fe_id: string }>
+    ) => {
+      const { componentList } = state;
+      const { fe_id } = action.payload;
+      const curCom = componentList.find((c) => c.fe_id === fe_id);
+      if (curCom) {
+        curCom.isLocked = !curCom.isLocked;
+      }
+    },
+
+    // 拷贝当前选中的组件
+    copySelectedComponent: (state: ComponentsStateType) => {
+      const { selectedId, componentList } = state;
+      const curCom = componentList.find((c) => c.fe_id === selectedId);
+
+      if (!curCom) {
+        return;
+      }
+
+      state.copiedComponent = cloneDeep(curCom);
+    },
+
+    // 粘贴组件
+    pasteCopiedComponent: (state: ComponentsStateType) => {
+      const { copiedComponent } = state;
+      if (copiedComponent == null) {
+        return;
+      }
+
+      // 将fe_id修改
+      copiedComponent.fe_id = nanoid();
+
+      // 插入新组件
+      insertNewComponent(state, copiedComponent);
+    },
+
+    // 选中上一个
+    selectPrevComponent: (state: ComponentsStateType) => {
+      const { selectedId, componentList } = state;
+
+      const index = componentList.findIndex((c) => c.fe_id === selectedId);
+      // 未选中组件
+      if (index < 0) {
+        return;
+      }
+      // 已经选中第一个，无法再向上选中
+      if (index <= 0) {
+        return;
+      }
+
+      state.selectedId = componentList[index - 1].fe_id;
+    },
+
+    // 选中下一个
+    selectNextComponent: (state: ComponentsStateType) => {
+      const { selectedId, componentList } = state;
+
+      const index = componentList.findIndex((c) => c.fe_id === selectedId);
+      // 未选中组件
+      if (index < 0) {
+        return;
+      }
+      // 已经选中第最后一个，无法再向下选中
+      if (index === componentList.length - 1) {
+        return;
+      }
+
+      state.selectedId = componentList[index + 1].fe_id;
     },
   },
 });
 
-export const { resetComponents, changeSelectedId, addComponent } =
-  componentsSlice.actions;
+export const {
+  resetComponents,
+  changeSelectedId,
+  addComponent,
+  changeComponentProps,
+  removeSelectedComponent,
+  changeComponentHidden,
+  toggleComponentLocked,
+  copySelectedComponent,
+  pasteCopiedComponent,
+  selectPrevComponent,
+  selectNextComponent,
+} = componentsSlice.actions;
 
 export default componentsSlice.reducer;
