@@ -4,6 +4,7 @@ import { getQuestionService } from "../service/question";
 import { useEffect } from "react";
 import { useDispatch } from "react-redux";
 import { resetComponents } from "../store/componentsReducer";
+import { resetPageInfo } from "../store/pageInfoReducer";
 
 function useLoadeQuestionData() {
   const { id = "" } = useParams();
@@ -28,7 +29,13 @@ function useLoadeQuestionData() {
     if (!data) {
       return;
     }
-    const { componentList = [] } = data;
+    const {
+      title = "",
+      desc = "",
+      js = "",
+      css = "",
+      componentList = [],
+    } = data;
 
     // 获取默认的 selectedId
     let selectedId = "";
@@ -40,6 +47,9 @@ function useLoadeQuestionData() {
     dispatch(
       resetComponents({ componentList, selectedId, copiedComponent: null })
     );
+
+    // 把 pageInfo 存储到 redux store
+    dispatch(resetPageInfo({ title, desc, js, css }));
   }, [data, dispatch]);
 
   // 判断id变化， 执行 ajax 加载问卷数据

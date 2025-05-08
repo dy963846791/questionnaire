@@ -43,6 +43,7 @@ const ComponentLib: FC = () => {
     <>
       {componentConfGroup.map((group, index) => {
         const { groupId, groupName, components } = group;
+
         return (
           <div key={groupId} style={{ marginTop: index > 0 ? "20px" : "0" }}>
             <Title level={3} style={{ fontSize: "16px" }}>

@@ -1,8 +1,10 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 import cloneDeep from "lodash.clonedeep";
+import { arrayMove } from "@dnd-kit/sortable";
 import { ComponentPropsType } from "../../components/QuesionComponents";
 import { getNextSelectedId, insertNewComponent } from "./utils";
 import { nanoid } from "nanoid";
+import { produce } from "immer";
 
 export type ComponentInfoType = {
   fe_id: string;
@@ -118,11 +120,9 @@ export const componentsSlice = createSlice({
       const { selectedId, componentList } = state;
       const curCom = componentList.find((c) => c.fe_id === selectedId);
 
-      if (!curCom) {
-        return;
+      if (curCom) {
+        state.copiedComponent = cloneDeep(curCom);
       }
-
-      state.copiedComponent = cloneDeep(curCom);
     },
 
     // 粘贴组件
@@ -172,6 +172,31 @@ export const componentsSlice = createSlice({
 
       state.selectedId = componentList[index + 1].fe_id;
     },
+
+    // 修改组件标题
+    chnageComponentTitle: (
+      state: ComponentsStateType,
+      action: PayloadAction<{ fe_id: string; title: string }>
+    ) => {
+      const { fe_id, title } = action.payload;
+      const curCom = state.componentList.find((c) => c.fe_id === fe_id);
+      if (curCom) {
+        curCom.title = title;
+      }
+    },
+
+    // 移动组件位置
+    moveComponent: produce(
+      (
+        draft: ComponentsStateType,
+        action: PayloadAction<{ oldIndex: number; newIndex: number }>
+      ) => {
+        const { componentList: curComponentList } = draft;
+        const { oldIndex, newIndex } = action.payload;
+
+        draft.componentList = arrayMove(curComponentList, oldIndex, newIndex);
+      }
+    ),
   },
 });
 
@@ -187,6 +212,8 @@ export const {
   pasteCopiedComponent,
   selectPrevComponent,
   selectNextComponent,
+  chnageComponentTitle,
+  moveComponent,
 } = componentsSlice.actions;
 
 export default componentsSlice.reducer;
