@@ -34,6 +34,7 @@ function useLoadeQuestionData() {
       desc = "",
       js = "",
       css = "",
+      isPublished = false,
       componentList = [],
     } = data;
 
@@ -49,7 +50,7 @@ function useLoadeQuestionData() {
     );
 
     // 把 pageInfo 存储到 redux store
-    dispatch(resetPageInfo({ title, desc, js, css }));
+    dispatch(resetPageInfo({ title, desc, js, css, isPublished }));
   }, [data, dispatch]);
 
   // 判断id变化， 执行 ajax 加载问卷数据

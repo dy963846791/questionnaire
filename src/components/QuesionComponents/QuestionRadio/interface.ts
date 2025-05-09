@@ -23,3 +23,7 @@ export const QuestionRadioDefaultProps: QuestionRadioPropsType = {
   ],
   value: "",
 };
+
+export type QuestionRadioStatType = {
+  stat: { name: string; count: number }[];
+};
